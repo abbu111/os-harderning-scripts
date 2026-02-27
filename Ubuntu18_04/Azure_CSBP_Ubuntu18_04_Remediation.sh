@@ -57,9 +57,9 @@ echo -e "${BLUE}2.1 Services - inetd Services${NC}"
 # 2.2.10 Ensure xinetd is not enabled
 echo
 echo -e "${RED}2.1.10${NC} Ensure xinetd is not enabled"
-systemctl disable xinetd
+systemctl disable xinetd 2>/dev/null
 policystatus=$?
-if [[ "$policystatus" -eq 0 ]]; then
+if [[ "$policystatus" -eq 0 ]] || ! systemctl list-unit-files | grep -q xinetd; then
     echo -e "${GREEN}Remediated:${NC} Ensure xinetd is not enabled"
     success=$((success + 1))
 else
@@ -70,38 +70,40 @@ fi
 # 2.1.6 Ensure rsh server is not enabled
 echo
 echo -e "${RED}2.1.6${NC} Ensure rsh server is not enabled"
-sed -i -e 's/shell/#shell/g' /etc/inetd.conf
-grep "shell" /etc/inetd.conf || echo "shell" >> /etc/inetd.conf
-sed -i -e 's/shell/#shell/g' /etc/inetd.d/*
-grep "shell" /etc/inetd.d/* || echo "shell" >> /etc/inetd.d/*
-sed -i -e 's/login/#login/g' /etc/rsyslog.conf
-grep "login" /etc/inetd.conf || echo "login" >> /etc/inetd.conf
-sed -i -e 's/login/#login/g' /etc/inetd.d/*
-grep "login" /etc/inetd.d/* || echo "login" >> /etc/inetd.d/*
-sed -i -e 's/exec/#exec/g' /etc/rsyslog.conf
-grep "exec" /etc/inetd.conf || echo "exec" >> /etc/inetd.conf
-sed -i -e 's/exec/#exec/g' /etc/inetd.d/*
-grep "exec" /etc/inetd.d/* || echo "exec" >> /etc/inetd.d/*
+if [ -f /etc/inetd.conf ]; then
+    sed -i -e 's/^shell/#shell/g' /etc/inetd.conf
+    sed -i -e 's/^login/#login/g' /etc/inetd.conf
+    sed -i -e 's/^exec/#exec/g' /etc/inetd.conf
+fi
+if [ -d /etc/inetd.d ] && [ "$(ls -A /etc/inetd.d 2>/dev/null)" ]; then
+    sed -i -e 's/^shell/#shell/g' /etc/inetd.d/* 2>/dev/null
+    sed -i -e 's/^login/#login/g' /etc/inetd.d/* 2>/dev/null
+    sed -i -e 's/^exec/#exec/g' /etc/inetd.d/* 2>/dev/null
+fi
 echo -e "${GREEN}Remediated:${NC} Ensure rsh server is not enabled"
 success=$((success + 1))
 
 # 2.1.8 Ensure telnet server is not enabled
 echo
 echo -e "${RED}2.1.8${NC} Ensure telnet server is not enabled"
-sed -i -e 's/telnet/#telnet/g' /etc/inetd.conf
-grep "telnet" /etc/inetd.conf || echo "telnet" >> /etc/inetd.conf
-sed -i -e 's/shell/#shell/g' /etc/inetd.d/*
-grep "shell" /etc/inetd.d/* || echo "shell" >> /etc/inetd.d/*
+if [ -f /etc/inetd.conf ]; then
+    sed -i -e 's/^telnet/#telnet/g' /etc/inetd.conf
+fi
+if [ -d /etc/inetd.d ] && [ "$(ls -A /etc/inetd.d 2>/dev/null)" ]; then
+    sed -i -e 's/^telnet/#telnet/g' /etc/inetd.d/* 2>/dev/null
+fi
 echo -e "${GREEN}Remediated:${NC} Ensure telnet server is not enabled"
 success=$((success + 1))
 
 # 2.1.9 Ensure tftp server is not enabled
 echo
 echo -e "${RED}2.1.9${NC} Ensure tftp server is not enabled"
-sed -i -e 's/tftp/#tftp/g' /etc/inetd.conf
-grep "tftp" /etc/inetd.conf || echo "tftp" >> /etc/inetd.conf
-sed -i -e 's/shell/#shell/g' /etc/inetd.d/*
-grep "tftp" /etc/inetd.d/* || echo "tftp" >> /etc/inetd.d/*
+if [ -f /etc/inetd.conf ]; then
+    sed -i -e 's/^tftp/#tftp/g' /etc/inetd.conf
+fi
+if [ -d /etc/inetd.d ] && [ "$(ls -A /etc/inetd.d 2>/dev/null)" ]; then
+    sed -i -e 's/^tftp/#tftp/g' /etc/inetd.d/* 2>/dev/null
+fi
 echo -e "${GREEN}Remediated:${NC} Ensure tftp server is not enabled"
 success=$((success + 1))
 
@@ -112,9 +114,9 @@ echo -e "${BLUE}2.2 Services - Special Purpose Services${NC}"
 # 2.2.11 Ensure IMAP and POP3 server is not enabled
 echo
 echo -e "${RED}2.2.11${NC} Ensure IMAP and POP3 server is not enabled"
-systemctl disable dovecot
+systemctl disable dovecot 2>/dev/null
 policystatus=$?
-if [[ "$policystatus" -eq 0 ]]; then
+if [[ "$policystatus" -eq 0 ]] || ! systemctl list-unit-files | grep -q dovecot; then
     echo -e "${GREEN}Remediated:${NC} Ensure IMAP and POP3 server is not enabled"
     success=$((success + 1))
 else
@@ -125,9 +127,9 @@ fi
 # 2.2.3 Ensure Avahi Server is not enabled
 echo
 echo -e "${RED}2.2.3${NC} Ensure Avahi Server is not enabled"
-systemctl disable avahi-daemon
+systemctl disable avahi-daemon 2>/dev/null
 policystatus=$?
-if [[ "$policystatus" -eq 0 ]]; then
+if [[ "$policystatus" -eq 0 ]] || ! systemctl list-unit-files | grep -q avahi-daemon; then
     echo -e "${GREEN}Remediated:${NC} Ensure Avahi Server is not enabled"
     success=$((success + 1))
 else
@@ -138,9 +140,9 @@ fi
 # 2.2.4 Ensure CUPS is not enabled
 echo
 echo -e "${RED}2.2.4${NC} Ensure CUPS is not enabled"
-systemctl disable cups
+systemctl disable cups 2>/dev/null
 policystatus=$?
-if [[ "$policystatus" -eq 0 ]]; then
+if [[ "$policystatus" -eq 0 ]] || ! systemctl list-unit-files | grep -q "^cups.service"; then
     echo -e "${GREEN}Remediated:${NC} Ensure CUPS is not enabled"
     success=$((success + 1))
 else
@@ -151,9 +153,9 @@ fi
 # 2.2.5 Ensure DHCP Server is not enabled
 echo
 echo -e "${RED}2.2.5${NC} Ensure DHCP Server is not enabled"
-systemctl disable isc-dhcp-server && systemctl disable isc-dhcp-server6
-policystatus=$?
-if [[ "$policystatus" -eq 0 ]]; then
+systemctl disable isc-dhcp-server 2>/dev/null
+systemctl disable isc-dhcp-server6 2>/dev/null
+if ! systemctl list-unit-files | grep -q "isc-dhcp-server"; then
     echo -e "${GREEN}Remediated:${NC} Ensure DHCP Server is not enabled"
     success=$((success + 1))
 else
@@ -164,9 +166,9 @@ fi
 #Ensure LDAP server is not enabled
 echo
 echo -e "${RED}2.2.17${NC} Ensure LDAP server is not enabled"
-systemctl disable slapd
+systemctl disable slapd 2>/dev/null
 policystatus=$?
-if [[ "$policystatus" -eq 0 ]]; then
+if [[ "$policystatus" -eq 0 ]] || ! systemctl list-unit-files | grep -q slapd; then
     echo -e "${GREEN}Remediated:${NC} Ensure LDAP server is not enabled"
     success=$((success + 1))
 else
@@ -177,9 +179,9 @@ fi
 # 2.2.8 Ensure DNS Server is not enabled
 echo
 echo -e "${RED}2.2.8${NC} Ensure DNS Server is not enabled"
-systemctl disable bind9
+systemctl disable bind9 2>/dev/null
 policystatus=$?
-if [[ "$policystatus" -eq 0 ]]; then
+if [[ "$policystatus" -eq 0 ]] || ! systemctl list-unit-files | grep -q bind9; then
     echo -e "${GREEN}Remediated:${NC} Ensure DNS Server is not enabled"
     success=$((success + 1))
 else
@@ -194,8 +196,12 @@ echo -e "${BLUE}2.3 Services - Service Clients${NC}"
 # 2.3.1 Ensure NIS Client is not installed
 echo
 echo -e "${RED}2.3.1${NC} Ensure NIS Client is not installed"
-apt-get remove nis
-policystatus=$?
+if dpkg -l | grep -q "^ii.*nis"; then
+    apt-get remove -y nis
+    policystatus=$?
+else
+    policystatus=0
+fi
 if [[ "$policystatus" -eq 0 ]]; then
     echo -e "${GREEN}Remediated:${NC} Ensure NIS Client is not installed"
     success=$((success + 1))
@@ -207,8 +213,12 @@ fi
 # 2.3.2 Ensure rsh client is not installed
 echo
 echo -e "${RED}2.3.2${NC} Ensure rsh client is not installed"
-apt-get remove rsh-client rsh-redone-client
-policystatus=$?
+if dpkg -l | grep -qE "^ii.*(rsh-client|rsh-redone-client)"; then
+    apt-get remove -y rsh-client rsh-redone-client 2>/dev/null
+    policystatus=$?
+else
+    policystatus=0
+fi
 if [[ "$policystatus" -eq 0 ]]; then
     echo -e "${GREEN}Remediated:${NC} Ensure rsh client is not installed"
     success=$((success + 1))
@@ -220,8 +230,12 @@ fi
 # 2.3.4 Ensure telnet client is not installed
 echo
 echo -e "${RED}2.3.4${NC} Ensure telnet client is not installed"
-apt-get remove telnet
-policystatus=$?
+if dpkg -l | grep -q "^ii.*telnet"; then
+    apt-get remove -y telnet
+    policystatus=$?
+else
+    policystatus=0
+fi
 if [[ "$policystatus" -eq 0 ]]; then
     echo -e "${GREEN}Remediated:${NC} Ensure telnet client is not installed"
     success=$((success + 1))
@@ -334,18 +348,30 @@ fi
 # 4.2.1.3 Ensure rsyslog default file permissions configured
 echo
 echo -e "${RED}4.2.1.3${NC} Ensure rsyslog default file permissions configured"
-grep "$FileCreateMode 0640" /etc/rsyslog.conf || echo "$""FileCreateMode 0640" >> /etc/rsyslog.conf
-grep "$FileCreateMode 0640" /etc/rsyslog.d/*.conf || echo "$""FileCreateMode 0640" >> /etc/rsyslog.d/*.conf
+if ! grep -q "^\$FileCreateMode 0640" /etc/rsyslog.conf; then
+    echo "\$FileCreateMode 0640" >> /etc/rsyslog.conf
+fi
+if [ -d /etc/rsyslog.d ] && [ "$(ls -A /etc/rsyslog.d/*.conf 2>/dev/null)" ]; then
+    for conf_file in /etc/rsyslog.d/*.conf; do
+        if ! grep -q "^\$FileCreateMode 0640" "$conf_file"; then
+            echo "\$FileCreateMode 0640" >> "$conf_file"
+        fi
+    done
+fi
 echo -e "${GREEN}Remediated:${NC} Ensure rsyslog default file permissions configured"
 success=$((success + 1))
 
 # 4.2.1.5 Ensure remote rsyslog messages are only accepted on designated log hosts
 echo
 echo -e "${RED}4.2.1.5${NC} Ensure remote rsyslog messages are only accepted on designated log hosts"
-sed -i -e 's/#$ModLoad imtcp.so/$ModLoad imtcp.so/g' /etc/rsyslog.conf
-grep "$ModLoad imtcp.so" /etc/rsyslog.conf || echo "$""ModLoad imtcp.so" >> /etc/rsyslog.conf
-sed -i -e 's/#$InputTCPServerRun 514/$InputTCPServerRun 514/g' /etc/rsyslog.conf
-grep "$InputTCPServerRun 514" /etc/rsyslog.conf || echo "$""InputTCPServerRun 514" >> /etc/rsyslog.conf
+sed -i -e 's/#\$ModLoad imtcp/\$ModLoad imtcp/g' /etc/rsyslog.conf
+if ! grep -q "^\$ModLoad imtcp" /etc/rsyslog.conf; then
+    echo "\$ModLoad imtcp" >> /etc/rsyslog.conf
+fi
+sed -i -e 's/#\$InputTCPServerRun 514/\$InputTCPServerRun 514/g' /etc/rsyslog.conf
+if ! grep -q "^\$InputTCPServerRun 514" /etc/rsyslog.conf; then
+    echo "\$InputTCPServerRun 514" >> /etc/rsyslog.conf
+fi
 echo -e "${GREEN}Remediated:${NC} Ensure remote rsyslog messages are only accepted on designated log hosts"
 success=$((success + 1))
 
@@ -356,8 +382,12 @@ echo -e "${BLUE}4.2 Logging and Auditing - Configure Logging${NC}"
 #Ensure rsyslog or syslog-ng is installed
 echo
 echo -e "${RED}4.2.3${NC} Ensure rsyslog or syslog-ng is installed"
-apt-get install rsyslog || apt-get install syslog-ng
-policystatus=$?
+if ! dpkg -l | grep -qE "^ii.*(rsyslog|syslog-ng)"; then
+    apt-get install -y rsyslog || apt-get install -y syslog-ng
+    policystatus=$?
+else
+    policystatus=0
+fi
 if [[ "$policystatus" -eq 0 ]]; then
     echo -e "${GREEN}Remediated:${NC} Ensure rsyslog or syslog-ng is installed"
     success=$((success + 1))
@@ -390,8 +420,14 @@ echo -e "${BLUE}5.2 Access, Authentication and Authorization - SSH Server Config
 # 5.2.2 Ensure SSH Protocol is set to 2
 echo
 echo -e "${RED}5.2.2${NC} Ensure SSH Protocol is set to 2"
-egrep -q "^(\s*)Protocol\s+\S+(\s*#.*)?\s*$" /etc/ssh/sshd_config && sed -ri "s/^(\s*)Protocol\s+\S+(\s*#.*)?\s*$/\1Protocol 2\2/" /etc/ssh/sshd_config || echo "Protocol 2" >> /etc/ssh/sshd_config
-policystatus=$?
+# Note: Protocol directive is deprecated in OpenSSH 7.4+, SSH protocol 2 is the default
+if grep -q "^Protocol" /etc/ssh/sshd_config; then
+    sed -ri "s/^(\s*)Protocol\s+\S+(\s*#.*)?\s*$/\1Protocol 2\2/" /etc/ssh/sshd_config
+    policystatus=$?
+else
+    # Protocol 2 is default in modern OpenSSH, no action needed
+    policystatus=0
+fi
 if [[ "$policystatus" -eq 0 ]]; then
     echo -e "${GREEN}Remediated:${NC} Ensure SSH Protocol is set to 2"
     success=$((success + 1))
